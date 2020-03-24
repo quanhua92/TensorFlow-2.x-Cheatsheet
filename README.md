@@ -35,9 +35,12 @@ Official guide: [TensorFlow Datasets: a collection of ready-to-use datasets.](ht
 
 ```python
 import tensorflow_datasets as tfds
-mnist_data = tfds.load("mnist")
+mnist_data, info = tfds.load('mnist', with_info=True)
 mnist_train, mnist_test = mnist_data["train"], mnist_data["test"]
+
 assert isinstance(mnist_train, tf.data.Dataset)
+assert info.splits['train'].num_examples == 60000
+assert info.splits['test'].num_examples == 10000
 ```
 
 <details>
