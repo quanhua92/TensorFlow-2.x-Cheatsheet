@@ -132,7 +132,7 @@ dataset.cache("/path/to/file)
 ## Shuffle, Batch, Prefetch
 
 ```python
-ds_train = ds_train.shuffle(ds_info.splits['train'].num_examples)
+ds_train = ds_train.shuffle(1000)
 ds_train = ds_train.batch(128)
 ds_train = ds_train.prefetch(tf.data.experimental.AUTOTUNE)
 ```
