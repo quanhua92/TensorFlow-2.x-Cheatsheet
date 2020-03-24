@@ -5,6 +5,7 @@ CheatSheet for deep learning and machine learning researchers using Keras &amp; 
 
 - [Example Notebooks](#example-notebooks)
   - [Image Classification - MNIST](notebooks/image%20classification%20-%20mnist.ipynb)
+  - [Transfer Learning - cats vs dogs](notebooks/transfer%20learning%20-%20cats%20vs%20dogs.ipynb)
 - [Datasets](#datasets)
   - [Keras Datasets](#keras-datasets)
   - [TensorFlow Datasets: tfds](#tfds-datasets)
@@ -13,6 +14,9 @@ CheatSheet for deep learning and machine learning researchers using Keras &amp; 
   - [Cache Dataset](#cache-dataset)
   - [Shuffle, Batch, Prefetch](#shuffle-batch-prefetch)
   - [Test Pipeline](#test-pipeline)
+- [Models](#models)
+  - [Keras Model](#keras-model)
+  - [TensorFlow Hub](#tensorflow-hub)
 - [Helper Methods](#helper)
   - [File Management](#helper-file)
     - [Download File from URL and extract the archive](#get_file)
@@ -22,6 +26,7 @@ CheatSheet for deep learning and machine learning researchers using Keras &amp; 
 # Example Notebooks
 
 - [Image Classification - MNIST](notebooks/image%20classification%20-%20mnist.ipynb)
+- [Transfer Learning - cats vs dogs](notebooks/transfer%20learning%20-%20cats%20vs%20dogs.ipynb)
 
 <a id="datasets"></a>
 
@@ -94,13 +99,30 @@ import pathlib
 data_dir = "D:\\Data\\coco\\2017"
 pathlib.Path(data_dir).mkdir(parents=True, exist_ok=True)
 
-# Download dataset
+# Get dataset - with load
+datasets = tfds.load("coco/2017", data_dir=data_dir)
+
+# Get dataset - with builder
 builder = tfds.builder("coco/2017", data_dir=data_dir)
 builder.download_and_prepare()
 datasets = builder.as_dataset()
 ```
 </details>
 
+
+<details>
+<summary>Click: Get Custom Splits on Dataset</summary>
+
+```python
+SPLIT_WEIGHTS = (8, 1, 1)
+splits = tfds.Split.TRAIN.subsplit(weighted=SPLIT_WEIGHTS)
+
+(raw_train, raw_validation, raw_test), metadata = tfds.load('cats_vs_dogs', 
+                                                            split=list(splits),
+                                                            with_info=True,
+                                                            as_supervised=True)
+```
+</details>
 
 
 <a id="input-pipeline"></a>
@@ -146,6 +168,29 @@ ds_test = ds_test.map(normalize_img, num_parallel_calls=tf.data.experimental.AUT
 ds_test = ds_test.batch(128)
 ds_test = ds_test.cache()
 ds_test = ds_test.prefetch(tf.data.experimental.AUTOTUNE)
+```
+
+
+
+<a id="models"></a>
+
+# Models
+
+## Keras Model
+
+```python
+base_model = tf.keras.applications.MobileNetV2(input_shape=(IMG_SIZE, IMG_SIZE, 3),
+                                               include_top=False,
+                                               weights='imagenet')
+```
+
+## TensorFlow Hub
+
+```python
+import tensorflow_hub as hub
+
+url = "https://tfhub.dev/google/imagenet/mobilenet_v2_035_160/classification/4"
+base_model = hub.KerasLayer(url, input_shape=(IMG_SIZE, IMG_SIZE, 3), trainable=False)
 ```
 
 <a id="helper"></a>
