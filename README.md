@@ -3,14 +3,25 @@ CheatSheet for deep learning and machine learning researchers using Keras &amp; 
 
 # Table of Contents
 
+- [Example Notebooks](#example-notebooks)
+  - [Image Classification - MNIST](notebooks/image%20classification%20-%20mnist.ipynb)
 - [Datasets](#datasets)
   - [Keras Datasets](#keras-datasets)
   - [TensorFlow Datasets: tfds](#tfds-datasets)
+- [Input pipelines](#input-pipeline)
+  - [Normalize images](#normalize-images)
+  - [Cache Dataset](#cache-dataset)
+  - [Shuffle, Batch, Prefetch](#shuffle-batch-prefetch)
+  - [Test Pipeline](#test-pipeline)
 - [Helper Methods](#helper)
   - [File Management](#helper-file)
     - [Download File from URL and extract the archive](#get_file)
   - [Device Management](#helper-device)
     - [Get Physical Devices](#Get-Physical-Devices)
+
+# Example Notebooks
+
+- [Image Classification - MNIST](notebooks/image%20classification%20-%20mnist.ipynb)
 
 <a id="datasets"></a>
 
@@ -73,6 +84,69 @@ np_datasets = tfds.as_numpy(datasets)
 ```
 </details>
 
+
+<details>
+<summary>Click: Get COCO 2017 Object Detection Dataset</summary>
+
+```python
+# Custom the data_dir folder (optional)
+import pathlib
+data_dir = "D:\\Data\\coco\\2017"
+pathlib.Path(data_dir).mkdir(parents=True, exist_ok=True)
+
+# Download dataset
+builder = tfds.builder("coco/2017", data_dir=data_dir)
+builder.download_and_prepare()
+datasets = builder.as_dataset()
+```
+</details>
+
+
+
+<a id="input-pipeline"></a>
+
+# Input Pipelines
+
+## Normalize Images
+
+TFDS provides image as tf.uint8, we need tf.float32 & normalize images to (0, 1)
+
+```python
+def normalize_img(image, label):
+    """Normalizes images: `uint8` -> `float32`."""
+    return tf.cast(image, tf.float32) / 255., label
+
+ds_train = ds_train.map(normalize_img, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+```
+
+## Cache Dataset
+
+```python
+ds_train = ds_train.cache()
+// or
+dataset.cache("/path/to/file)
+```
+
+<a id="shuffle-batch-prefetch"></a>
+
+## Shuffle, Batch, Prefetch
+
+```python
+ds_train = ds_train.shuffle(ds_info.splits['train'].num_examples)
+ds_train = ds_train.batch(128)
+ds_train = ds_train.prefetch(tf.data.experimental.AUTOTUNE)
+```
+
+## Test pipeline
+
+In test pipeline, we will skip the random transformations (shuffle, cropping ...)
+
+```python
+ds_test = ds_test.map(normalize_img, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+ds_test = ds_test.batch(128)
+ds_test = ds_test.cache()
+ds_test = ds_test.prefetch(tf.data.experimental.AUTOTUNE)
+```
 
 <a id="helper"></a>
 
