@@ -6,6 +6,7 @@ CheatSheet for deep learning and machine learning researchers using Keras &amp; 
 - [Example Notebooks](#example-notebooks)
   - [Image Classification - MNIST](notebooks/image%20classification%20-%20mnist.ipynb)
   - [Transfer Learning - cats vs dogs](notebooks/transfer%20learning%20-%20cats%20vs%20dogs.ipynb)
+  - [Image Segmentation - Oxford III Pet](#image%20segmentation%20-%20oxford%20iii%20pet.ipynb)
 - [Datasets](#datasets)
   - [Keras Datasets](#keras-datasets)
   - [TensorFlow Datasets: tfds](#tfds-datasets)
@@ -17,6 +18,7 @@ CheatSheet for deep learning and machine learning researchers using Keras &amp; 
 - [Models](#models)
   - [Keras Model](#keras-model)
   - [TensorFlow Hub](#tensorflow-hub)
+  - [Get activations of intermediate layers from model](#activations-inter-layers)
 - [Helper Methods](#helper)
   - [File Management](#helper-file)
     - [Download File from URL and extract the archive](#get_file)
@@ -27,6 +29,7 @@ CheatSheet for deep learning and machine learning researchers using Keras &amp; 
 
 - [Image Classification - MNIST](notebooks/image%20classification%20-%20mnist.ipynb)
 - [Transfer Learning - cats vs dogs](notebooks/transfer%20learning%20-%20cats%20vs%20dogs.ipynb)
+- [Image Segmentation - Oxford III Pet](#image%20segmentation%20-%20oxford%20iii%20pet.ipynb)
 
 <a id="datasets"></a>
 
@@ -192,6 +195,31 @@ import tensorflow_hub as hub
 url = "https://tfhub.dev/google/imagenet/mobilenet_v2_035_160/classification/4"
 base_model = hub.KerasLayer(url, input_shape=(IMG_SIZE, IMG_SIZE, 3), trainable=False)
 ```
+
+<a id="activations-inter-layers"></a>
+
+## Get activations of intermediate layers from model
+
+```python
+base_model = tf.keras.applications.MobileNetV2(input_shape=[128, 128, 3], include_top=False)
+
+# Use the activations of these layers
+layer_names = [
+    'block_1_expand_relu',   # 64x64
+    'block_3_expand_relu',   # 32x32
+    'block_6_expand_relu',   # 16x16
+    'block_13_expand_relu',  # 8x8
+    'block_16_project',      # 4x4
+]
+layers = [base_model.get_layer(name).output for name in layer_names]
+
+# Create the feature extraction model
+down_stack = tf.keras.Model(inputs=base_model.input, outputs=layers)
+
+down_stack.trainable = False
+```
+
+
 
 <a id="helper"></a>
 
